@@ -1,3 +1,5 @@
+package util
+
 interface Platform {
     val name: String
 }
