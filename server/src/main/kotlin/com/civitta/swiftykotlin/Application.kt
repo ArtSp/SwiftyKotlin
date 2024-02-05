@@ -15,7 +15,7 @@ fun main() {
 
 fun Application.module() {
     routing {
-        get("/") {
+        get(Constants.Path.GET_VERSION) {
             call.respondText("Ktor: ${Greeting().greet()}")
         }
     }

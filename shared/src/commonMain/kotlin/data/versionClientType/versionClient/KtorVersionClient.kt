@@ -43,7 +43,7 @@ class KtorVersionClient(
     }
     override suspend fun getServerVersion(): AppVersion {
         return try {
-            request("/serverVersion")
+            request(Constants.Path.GET_VERSION)
                 .body<AppVersionDTO>()
                 .toDomain()
         } catch (e: Exception) {
