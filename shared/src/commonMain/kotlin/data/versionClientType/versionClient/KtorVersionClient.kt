@@ -14,6 +14,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.errors.*
 import util.Constants
+import util.Platform
+import util.getPlatform
 
 class KtorVersionClient(
     private val httpClient: HttpClient = createHttpClient()

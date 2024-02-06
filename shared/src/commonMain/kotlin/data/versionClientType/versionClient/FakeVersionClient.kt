@@ -5,10 +5,8 @@ import domain.models.AppVersion
 import util.getPlatform
 
 class FakeVersionClient: VersionClientType {
-    
-    private val platform = getPlatform()
     override suspend fun getServerVersion(): AppVersion {
-        return AppVersion(platform = platform.name, version = "0")
+        return AppVersion(platform = "Fake BE", version = "0")
     }
 
 }

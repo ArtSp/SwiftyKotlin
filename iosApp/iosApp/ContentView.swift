@@ -1,27 +1,29 @@
 import SwiftUI
-import Shared
 
 struct ContentView: View {
-    @State private var showContent = false
+    
+    @StateObject private var viewModel = ContentViewModel()
+    
     var body: some View {
-        VStack {
-            Button("Click me!") {
-                withAnimation {
-                    showContent = !showContent
+        VStack(spacing: 20) {
+            if let appVersion = viewModel.appVersion {
+                VStack {
+                    Image(systemName: "swift")
+                        .foregroundColor(.accentColor)
+                    Text(appVersion)
                 }
             }
-
-            if showContent {
-                VStack(spacing: 16) {
-                    Image(systemName: "swift")
-                        .font(.system(size: 200))
+            
+            if let beVersion = viewModel.beVersion {
+                VStack {
+                    Image(systemName: "server.rack")
                         .foregroundColor(.accentColor)
-                    Text("SwiftUI: \(Greeting().greet())")
+                    Text(beVersion)
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
+            } else {
+                Button("Load BE version") { viewModel.loadBEVersion() }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding()
     }
 }
