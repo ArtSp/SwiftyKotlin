@@ -1,4 +1,4 @@
-package data.models.remote
+package data.remote.models
 
 import domain.models.AppVersion
 import kotlinx.serialization.Serializable

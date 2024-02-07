@@ -1,4 +1,4 @@
-package data.factory.remote
+package data.remote
 
 import io.ktor.client.*
 import io.ktor.client.engine.darwin.*

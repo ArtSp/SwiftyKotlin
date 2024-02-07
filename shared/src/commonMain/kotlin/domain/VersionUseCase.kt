@@ -7,6 +7,7 @@ import util.getPlatform
 class VersionUseCase(
    private val client: VersionClientType
 ) {
+    @Throws(Exception::class)
     suspend fun getServerVersion(): AppVersion {
         return client.getServerVersion()
     }
