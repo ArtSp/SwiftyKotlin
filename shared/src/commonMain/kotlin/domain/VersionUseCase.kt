@@ -14,6 +14,6 @@ class VersionUseCase(
 
     fun getAppVersion(): AppVersion {
         val platform = getPlatform()
-        return AppVersion(platform = platform.name, version = "0")
+        return AppVersion(platform = platform.name, version = platform.version)
     }
 }
