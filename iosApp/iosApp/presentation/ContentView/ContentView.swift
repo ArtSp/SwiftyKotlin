@@ -38,7 +38,10 @@ struct ContentView: View {
                 set: { _ in viewModel.error = nil }
             )
         ) {
-            Alert(title: Text(viewModel.error ?? ""))
+            Alert(
+                title: Text(viewModel.error?.title ?? ""),
+                message: Text(viewModel.error?.message ?? "")
+            )
         }
         .padding()
     }

@@ -8,7 +8,7 @@ class ContentViewModel: ObservableObject {
     private let fakeVersionUseCase = VersionUseCase(client: FakeVersionClient())
     private let beVersionUseCase = VersionUseCase(client: KtorVersionClient())
     
-    @Published var error: String?
+    @Published var error: AppError?
     @Published var appVersion: String?
     @Published var beVersion: String?
     @Published var useFake: Bool = true {
@@ -38,8 +38,7 @@ class ContentViewModel: ObservableObject {
                 let version = try await versionUseCase.getServerVersion()
                 beVersion = [version.platform, version.version].joined(separator: " ")
             } catch {
-                // TODO: Extract just error message
-                self.error = error.localizedDescription
+                self.error = error.appError
             }
         }
     }

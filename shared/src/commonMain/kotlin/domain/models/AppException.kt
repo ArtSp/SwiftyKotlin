@@ -1,2 +1,6 @@
 package domain.models
-class AppException(private val error: AppError): Exception(error)
+
+class AppException(error: AppError): Exception(
+    message = error.message,
+    cause = error
+)
