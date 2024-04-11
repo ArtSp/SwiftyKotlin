@@ -3,6 +3,8 @@ val ktorVersion = "2.3.7"
 val sqlDelightVersion = "1.5.5"
 val dateTimeVersion = "0.4.1"
 
+task("testClasses")
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)

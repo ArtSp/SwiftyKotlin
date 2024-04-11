@@ -1,6 +1,3 @@
 package domain.models
 
-class AppException(error: AppError): Exception(
-    message = error.message,
-    cause = error
-)
+class AppException(error: AppError): Exception(error.message, error)
