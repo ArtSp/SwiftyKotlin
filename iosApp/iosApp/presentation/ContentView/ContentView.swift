@@ -1,36 +1,41 @@
 import SwiftUI
 
+// TODO: Declare
+
 struct ContentView: View {
     
     @StateObject private var viewModel = ContentViewModel()
     
+    func toggleTimer() {
+        viewModel.toggleTimer()
+    }
+    
     var body: some View {
         VStack {
-            
-            VStack(spacing: 20) {
-                
-                if let appVersion = viewModel.appVersion {
-                    VStack {
-                        Image(systemName: "swift")
-                            .foregroundColor(.accentColor)
-                        Text(appVersion)
+            ScrollView(.vertical) {
+                LazyVStack(spacing: 20, pinnedViews: .sectionHeaders) {
+                    
+                    Section(header: SectionHeaderView("Platform specific", module: "Platform")) {
+                        iosSpecificSectionContent
                     }
-                }
-                
-                if let beVersion = viewModel.beVersion {
-                    VStack {
-                        Image(systemName: "server.rack")
-                            .foregroundColor(.accentColor)
-                        Text(beVersion)
+                    
+                    Section(header: SectionHeaderView("Timer", module: "Shared")) {
+                        clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
                     }
-                } else {
-                    Button("Load BE version") { viewModel.loadBEVersion() }
-                }
+                    
+                    Section(header: SectionHeaderView("AppVersion", module: "Shared")) {
+                        localVersionSectionContent
+                    }
+                    
+                    Section(header: SectionHeaderView("BE Version", module: "Shared")) {
+                        remoteVersionSectionContent
+                    }
+                }.padding()
             }
             .frame(maxHeight: .infinity)
             
             Toggle("Use mock", isOn: $viewModel.useFake)
-            
+                .padding(.horizontal)
         }
         .alert(
             isPresented: .init(
@@ -43,7 +48,76 @@ struct ContentView: View {
                 message: Text(viewModel.error?.message ?? "")
             )
         }
+    }
+    
+    var iosSpecificSectionContent: some View {
+        Stepper("Count: \(viewModel.counter)", value: $viewModel.counter)
+    }
+    
+    var localVersionSectionContent: some View {
+        VStack {
+            Image(systemName: "swift")
+                .foregroundColor(.accentColor)
+            Text(viewModel.appVersion ?? "UNKNOWN")
+        }
+    }
+    
+    @ViewBuilder
+    var remoteVersionSectionContent: some View {
+        if let beVersion = viewModel.beVersion {
+            VStack {
+                Image(systemName: "server.rack")
+                    .foregroundColor(.accentColor)
+                Text(beVersion)
+            }
+        } else {
+            if viewModel.isLoadingRemoteVersion {
+                ProgressView()
+            } else {
+                Button("Load BE version") { viewModel.loadRemoteVersion() }
+            }
+        }
+    }
+    
+    func clockSectionContent(timerIsRunning: Bool) -> some View {
+        VStack {
+            Text(viewModel.clock ?? "Timer stopped")
+                .foregroundStyle(viewModel.clockIsRunning ? Color.black : .red)
+            
+            Button(viewModel.clockIsRunning ? "Stop" : "Start") {
+                toggleTimer()
+            }
+        }
+        .frame(minWidth: 120)
         .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8.0)
+    }
+}
+
+extension ContentView {
+    
+    struct SectionHeaderView: View {
+        let title: LocalizedStringKey
+        let module: LocalizedStringKey
+        
+        init(_ title: LocalizedStringKey, module: LocalizedStringKey) {
+            self.title = title
+            self.module = module
+        }
+        
+        var body: some View {
+            HStack {
+                Text(title)
+                    .font(.headline)
+                Spacer()
+                Text(module)
+                    .font(.subheadline)
+            }
+            .background(Color.primary
+                            .colorInvert()
+                            .opacity(0.95))
+        }
     }
 }
 

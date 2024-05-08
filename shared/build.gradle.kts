@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.androidLibrary)
     kotlin("plugin.serialization").version("1.9.22")
     id("com.squareup.sqldelight").version("1.5.5")
+    id("com.google.devtools.ksp").version("1.9.23-1.0.20")
+    id("com.rickclephas.kmp.nativecoroutines").version("1.0.0-ALPHA-27")
 }
 
 kotlin {
@@ -58,4 +60,8 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
+}
+
+kotlin.sourceSets.all {
+    languageSettings.optIn("kotlin.experimental.ExperimentalObjCName")
 }
