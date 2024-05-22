@@ -1,7 +1,5 @@
 import SwiftUI
 
-// TODO: Declare
-
 struct ContentView: View {
     
     @StateObject private var viewModel = ContentViewModel()
@@ -11,42 +9,53 @@ struct ContentView: View {
     }
     
     var body: some View {
-        VStack {
-            ScrollView(.vertical) {
-                LazyVStack(spacing: 20, pinnedViews: .sectionHeaders) {
-                    
-                    Section(header: SectionHeaderView("Platform specific", module: "Platform")) {
-                        iosSpecificSectionContent
-                    }
-                    
-                    Section(header: SectionHeaderView("Timer", module: "Shared")) {
-                        clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
-                    }
-                    
-                    Section(header: SectionHeaderView("AppVersion", module: "Shared")) {
-                        localVersionSectionContent
-                    }
-                    
-                    Section(header: SectionHeaderView("BE Version", module: "Shared")) {
-                        remoteVersionSectionContent
-                    }
-                }.padding()
+        NavigationStack {
+            VStack {
+                ScrollView(.vertical) {
+                    LazyVStack(spacing: 20, pinnedViews: .sectionHeaders) {
+                        
+                        Section(header: SectionHeaderView("Platform specific", module: "Platform")) {
+                            iosSpecificSectionContent
+                        }
+                        
+                        Section(header: SectionHeaderView("Timer", module: "Shared")) {
+                            clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
+                        }
+                        
+                        Section(header: SectionHeaderView("AppVersion", module: "Shared")) {
+                            localVersionSectionContent
+                        }
+                        
+                        Section(header: SectionHeaderView("BE Version", module: "Shared")) {
+                            remoteVersionSectionContent
+                        }
+                    }.padding()
+                }
+                .frame(maxHeight: .infinity)
+                
+                Toggle("Use mock", isOn: $viewModel.useFake)
+                    .padding(.horizontal)
             }
-            .frame(maxHeight: .infinity)
-            
-            Toggle("Use mock", isOn: $viewModel.useFake)
-                .padding(.horizontal)
-        }
-        .alert(
-            isPresented: .init(
-                get: { viewModel.error != nil },
-                set: { _ in viewModel.error = nil }
-            )
-        ) {
-            Alert(
-                title: Text(viewModel.error?.title ?? ""),
-                message: Text(viewModel.error?.message ?? "")
-            )
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Image("civita_logo_white")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 20)
+                        .colorInvert()
+                }
+            }
+            .alert(
+                isPresented: .init(
+                    get: { viewModel.error != nil },
+                    set: { _ in viewModel.error = nil }
+                )
+            ) {
+                Alert(
+                    title: Text(viewModel.error?.title ?? ""),
+                    message: Text(viewModel.error?.message ?? "")
+                )
+            }
         }
     }
     

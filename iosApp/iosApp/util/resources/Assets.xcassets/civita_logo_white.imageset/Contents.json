@@ -1,0 +1,15 @@
+{
+  "images" : [
+    {
+      "filename" : "civita_logo_2023_white-RGB.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true
+  }
+}
