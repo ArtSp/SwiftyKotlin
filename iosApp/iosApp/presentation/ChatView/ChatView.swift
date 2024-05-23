@@ -1,4 +1,5 @@
 import SwiftUI
+import Shared
 
 struct ChatView: View {
     
@@ -23,8 +24,21 @@ struct ChatView: View {
                 }
             }
             
-            Spacer()
+            chatContentView
         }
         .navigationTitle("Chat")
+    }
+    
+    // TODO: Make content view for chat messages
+    var chatContentView: some View {
+        Spacer()
+    }
+}
+
+struct ChatView_Previews: PreviewProvider {
+    static let vm = ChatViewModel(chatUseCase: ChatUseCase(client: FakeRemoteClient()))
+    
+    static var previews: some View {
+        ChatView(viewModel: vm)
     }
 }
