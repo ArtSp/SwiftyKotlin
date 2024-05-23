@@ -26,7 +26,7 @@ struct ContentView: View {
                             localVersionSectionContent
                         }
                         
-                        Section(header: SectionHeaderView("BE Version", module: "Shared")) {
+                        Section(header: SectionHeaderView("Backend", module: "Shared")) {
                             remoteVersionSectionContent
                         }
                     }.padding()
@@ -73,19 +73,32 @@ struct ContentView: View {
     
     @ViewBuilder
     var remoteVersionSectionContent: some View {
-        if let beVersion = viewModel.beVersion {
-            VStack {
-                Image(systemName: "server.rack")
-                    .foregroundColor(.accentColor)
-                Text(beVersion)
+        VStack(alignment: .leading) {
+            if let serverDate = viewModel.serverDate {
+                HStack {
+                    Text("Server time: ")
+                    Text(serverDate.date.swiftDate.formatted(date: .omitted, time: .complete))
+                    if let source = serverDate.source {
+                        Text(source)
+                            .foregroundStyle(.gray)
+                    }
+                }
             }
-        } else {
-            if viewModel.isLoadingRemoteVersion {
-                ProgressView()
+            
+            if let beVersion = viewModel.beVersion {
+                HStack {
+                    Text("Server version: ")
+                    Text(beVersion)
+                }
             } else {
-                Button("Load BE version") { viewModel.loadRemoteVersion() }
+                if viewModel.isLoadingRemoteVersion {
+                    ProgressView()
+                } else {
+                    Button("Load BE version") { viewModel.loadRemoteVersion() }
+                }
             }
-        }
+        }.frame(maxWidth: .infinity, alignment: .leading)
+        
     }
     
     func clockSectionContent(timerIsRunning: Bool) -> some View {

@@ -24,6 +24,7 @@ class ContentViewModel: ObservableObject {
     private let fakeVersionUseCase = VersionUseCase(client: FakeVersionClient())
     private let beVersionUseCase = VersionUseCase(client: KtorVersionClient())
     private var asyncTimeFlowHandle: Task<Void, Error>?
+    private var asyncServerTimeFlowHandle: Task<Void, Error>?
     private var getBackendVersionTask: Task<Void, Error>?
     
     // MARK: - 1.2
@@ -32,18 +33,19 @@ class ContentViewModel: ObservableObject {
     @Published var appVersion: String?
     @Published var beVersion: String?
     @Published var clock: String?
+    @Published var serverDate: ServerDate?
     @Published var counter: Int = 0
     @Published var useFake: Bool = true {
         didSet {
             appVersion = nil
             beVersion = nil
-            loadLocalVersion()
+            loadInitialData()
         }
     }
     
     // MARK: - 1.3
     init() {
-        loadLocalVersion()
+        loadInitialData()
     }
     
     // MARK: - 1.4
@@ -51,11 +53,16 @@ class ContentViewModel: ObservableObject {
     var isLoadingRemoteVersion: Bool { isLoading.contains(.beVersion) }
     
     // MARK: - 1.5
+    func loadInitialData() {
+        loadLocalVersion()
+        getBackendDateAsync()
+    }
+    
     func loadLocalVersion() {
         let version = versionUseCase.getAppVersion()
         appVersion = "Platform: \(version.platform), App version: \(version.version)"
     }
-
+    
     func loadRemoteVersion() {
         getBackendVersionAsync()
     }
@@ -98,10 +105,26 @@ private extension ContentViewModel {
         }
     }
     
+    func getBackendDateAsync() {
+        serverDate = nil
+        asyncServerTimeFlowHandle?.cancel()
+        asyncServerTimeFlowHandle = Task { @MainActor in
+            isLoading.insert(.serverDate); defer { isLoading.remove(.serverDate) }
+            do {
+                for try await element in asyncSequence(for: versionUseCase.getServerDate()) {
+                    serverDate = element
+                }
+            } catch {
+                self.error = error.appError
+            }
+        }
+    }
+    
     // Use asyncSequence to create cancelable async sequence call.
     // Without asyncSequence function will work in closure way, with no cancelation support.
     func startTimer() {
         stopTimer()
+        asyncTimeFlowHandle?.cancel()
         asyncTimeFlowHandle = Task { @MainActor in
             isLoading.insert(.timer); defer { isLoading.remove(.timer) }
             do {
@@ -128,6 +151,6 @@ private extension ContentViewModel {
 extension ContentViewModel {
     
     enum Content: Hashable {
-        case timer, beVersion
+        case timer, beVersion, serverDate
     }
 }

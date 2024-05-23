@@ -1,12 +1,15 @@
 package domain
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
+import data.remote.models.toDomain
 import data.versionClientType.VersionClientType
 import domain.models.AppVersion
+import domain.models.ServerDate
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -21,7 +24,7 @@ class VersionUseCase(
     @NativeCoroutines
     @Throws(Exception::class)
     suspend fun getServerVersion(): AppVersion {
-        return client.getServerVersion()
+        return client.getServerVersion().toDomain()
     }
 
     fun getAppVersion(): AppVersion {
@@ -37,5 +40,10 @@ class VersionUseCase(
             emit(thisTime.toString())
             delay(1_000 / 60)
         }
+    }
+
+    @NativeCoroutines
+    fun getServerDate(): Flow<ServerDate> {
+        return client.getServerDate().map { it.toDomain() }
     }
 }
