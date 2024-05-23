@@ -2,7 +2,7 @@ package domain
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import data.remote.models.toDomain
-import data.versionClientType.VersionClientType
+import data.remoteClientType.RemoteClientType
 import domain.models.AppVersion
 import domain.models.ServerDate
 import kotlinx.coroutines.currentCoroutineContext
@@ -19,7 +19,7 @@ import kotlinx.datetime.toLocalDateTime
 import util.getPlatform
 
 class VersionUseCase(
-   private val client: VersionClientType
+   private val client: RemoteClientType
 ) {
     @NativeCoroutines
     @Throws(Exception::class)
@@ -42,8 +42,4 @@ class VersionUseCase(
         }
     }
 
-    @NativeCoroutines
-    fun getServerDate(): Flow<ServerDate> {
-        return client.getServerDate().map { it.toDomain() }
-    }
 }

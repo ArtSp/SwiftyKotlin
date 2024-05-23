@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @StateObject private var viewModel = ContentViewModel()
+    @StateObject var viewModel = ContentViewModel()
     
     func toggleTimer() {
         viewModel.toggleTimer()
@@ -14,20 +14,24 @@ struct ContentView: View {
                 ScrollView(.vertical) {
                     LazyVStack(spacing: 20, pinnedViews: .sectionHeaders) {
                         
-                        Section(header: SectionHeaderView("Platform specific", module: "Platform")) {
+                        Section(header: SectionHeaderView("VM specific", module: "Platform")) {
                             iosSpecificSectionContent
                         }
                         
-                        Section(header: SectionHeaderView("Timer", module: "Shared")) {
+                        Section(header: SectionHeaderView("Local timer", module: "Shared")) {
                             clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
                         }
                         
-                        Section(header: SectionHeaderView("AppVersion", module: "Shared")) {
+                        Section(header: SectionHeaderView("Local version", module: "Shared")) {
                             localVersionSectionContent
                         }
                         
-                        Section(header: SectionHeaderView("Backend", module: "Shared")) {
+                        Section(header: SectionHeaderView("Remote version", module: "Shared")) {
                             remoteVersionSectionContent
+                        }
+                        
+                        Section(header: SectionHeaderView("Chat", module: "Shared")) {
+                            NavigationLink("Open chat", value: Destination.chat)
                         }
                     }.padding()
                 }
@@ -35,6 +39,12 @@ struct ContentView: View {
                 
                 Toggle("Use mock", isOn: $viewModel.useFake)
                     .padding(.horizontal)
+            }
+            .navigationDestination(for: Destination.self) { destination in
+                switch destination {
+                case .chat: 
+                    ChatView(viewModel: ChatViewModel(chatUseCase: viewModel.chatUseCase))
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -73,18 +83,7 @@ struct ContentView: View {
     
     @ViewBuilder
     var remoteVersionSectionContent: some View {
-        VStack(alignment: .leading) {
-            if let serverDate = viewModel.serverDate {
-                HStack {
-                    Text("Server time: ")
-                    Text(serverDate.date.swiftDate.formatted(date: .omitted, time: .complete))
-                    if let source = serverDate.source {
-                        Text(source)
-                            .foregroundStyle(.gray)
-                    }
-                }
-            }
-            
+        VStack {
             if let beVersion = viewModel.beVersion {
                 HStack {
                     Text("Server version: ")
@@ -97,7 +96,7 @@ struct ContentView: View {
                     Button("Load BE version") { viewModel.loadRemoteVersion() }
                 }
             }
-        }.frame(maxWidth: .infinity, alignment: .leading)
+        }
         
     }
     
@@ -140,6 +139,12 @@ extension ContentView {
                             .colorInvert()
                             .opacity(0.95))
         }
+    }
+}
+
+extension ContentView {
+    enum Destination: Hashable {
+        case chat
     }
 }
 

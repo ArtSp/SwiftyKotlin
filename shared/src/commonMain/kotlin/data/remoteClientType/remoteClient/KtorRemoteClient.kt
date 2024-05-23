@@ -1,9 +1,9 @@
-package data.versionClientType.versionClient
+package data.remoteClientType.remoteClient
 
 import data.remote.KtorClient
 import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
-import data.versionClientType.VersionClientType
+import data.remoteClientType.RemoteClientType
 import domain.models.AppError
 import domain.models.AppException
 import io.ktor.client.call.*
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import util.Constants
 
-class KtorVersionClient: VersionClientType {
+class KtorRemoteClient: RemoteClientType {
 
     private val httpClient: KtorClient = KtorClient()
 

@@ -1,15 +1,15 @@
-package data.versionClientType.versionClient
+package data.remoteClientType.remoteClient
 
 import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
-import data.versionClientType.VersionClientType
+import data.remoteClientType.RemoteClientType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.seconds
 
-class FakeVersionClient: VersionClientType {
+class FakeRemoteClient: RemoteClientType {
 
     private var version = AppVersionDTO(platform = "Fake BE", version = "0")
 
