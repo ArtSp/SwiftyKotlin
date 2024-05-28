@@ -8,30 +8,68 @@ struct ChatView: View {
     var body: some View {
         VStack {
             if let serverDate = viewModel.serverDate {
-                VStack {
-                    Text("Server time")
-                        .font(.title)
-                    HStack {
-                        Text(serverDate.date.swiftDate.formatted(date: .omitted, time: .complete))
-                        if let source = serverDate.source {
-                            Text(source)
-                                .foregroundStyle(.gray)
-                        }
-                    }
-                    Text("(Updates via network socket every N seconds)")
-                        .foregroundStyle(.gray)
-                        .font(.subheadline)
+                HStack {
+                    let source = serverDate.source ?? "NA"
+                    Text("Server time (\(source))")
+                    Text(serverDate.date.swiftDate.formatted(date: .omitted, time: .complete))
+                        .foregroundStyle(Color.black)
                 }
+                .font(.footnote)
+                .foregroundStyle(.gray)
             }
             
             chatContentView
         }
         .navigationTitle("Chat")
+        .overlay {
+            VStack {
+                Spacer()
+                HStack {
+                    TextField("Message", text: $viewModel.message)
+                    
+                    Button(action: {
+                        viewModel.sendMessage()
+                    }, label: {
+                        Image(systemName: "paperplane.circle.fill")
+                            .font(.largeTitle)
+                    })
+                    .disabled(viewModel.sendDisabled)
+                }
+                .padding()
+            }
+        }
     }
     
-    // TODO: Make content view for chat messages
     var chatContentView: some View {
-        Spacer()
+        ScrollView(.vertical) {
+            VStack {
+                VStack {
+                    Text("Messages: \(viewModel.messages.count)")
+                    ForEach(viewModel.messages, id: \.self) { message in
+                        
+                        Text(message.text)
+                            .foregroundStyle(Color.white)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .foregroundStyle(message.bgColor)
+                            )
+                            .frame(maxWidth: .infinity, alignment: message.isLocal ? .trailing : .leading)
+                    }
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+private extension ChatMessage {
+    var bgColor: Color {
+        switch theme {
+        case .green: return .green
+        default: return .blue
+        }
     }
 }
 

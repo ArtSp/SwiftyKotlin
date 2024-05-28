@@ -1,31 +1,63 @@
 import Foundation
 import Shared
+import Combine
 import KMPNativeCoroutinesAsync
 
 class ChatViewModel: ObservableObject {
     
-    private var asyncServerTimeFlowHandle: Task<Void, Error>?
-    
     @Published var serverDate: ServerDate?
     @Published var isLoading: Set<Content> = .init()
     @Published var error: AppError?
+    @Published var message: String = ""
+    @Published var messages: [ChatMessage] = []
     
-    let chatUseCase: ChatUseCase
+    private let chatUseCase: ChatUseCase
+    private var asyncServerTimeFlowHandle: Task<Void, Error>?
+    private var asyncChatFlowHandle: Task<Void, Error>?
+    private var typingCancelable: AnyCancellable?
     
     init(chatUseCase: ChatUseCase) {
         self.chatUseCase = chatUseCase
         connect()
     }
     
-}
-
-private extension ChatViewModel {
+    var sendDisabled: Bool { message.isEmpty }
     
-    func connect() {
-        getBackendDateAsync()
+    func sendMessage() {
+        guard !message.isEmpty else { return }
+        
+        Task { @MainActor in
+            isLoading.insert(.sendMessage); defer { isLoading.remove(.sendMessage) }
+            do {
+                _ = try await asyncFunction(for: chatUseCase.sendMessage(text: message))
+                message.removeAll()
+            } catch {
+                self.error = error.appError
+            }
+        }
     }
     
-    func getBackendDateAsync() {
+    
+    private func connect() {
+        getBackendDateAsync()
+        establishChatConnection()
+    }
+    
+    private func establishChatConnection() {
+        asyncChatFlowHandle?.cancel()
+        asyncChatFlowHandle = Task { @MainActor in
+            isLoading.insert(.chat); defer { isLoading.remove(.chat) }
+            do {
+                for try await element in asyncSequence(for: chatUseCase.establishChatConnection()) {
+                    messages = element
+                }
+            } catch {
+                self.error = error.appError
+            }
+        }
+    }
+    
+    private func getBackendDateAsync() {
         serverDate = nil
         asyncServerTimeFlowHandle?.cancel()
         asyncServerTimeFlowHandle = Task { @MainActor in
@@ -42,10 +74,8 @@ private extension ChatViewModel {
     
 }
 
-
 extension ChatViewModel {
-    
     enum Content: Hashable {
-        case serverDate, chat
+        case serverDate, chat, sendMessage
     }
 }

@@ -2,30 +2,8 @@ import Foundation
 import Shared
 import KMPNativeCoroutinesAsync
 
-// ViewModel(VM) File structure:
-//
-// 1 VM internal/public declaration
-// 1.1 VM private variables
-// 1.2 VM variables
-// 1.3 VM init/deinit
-// 1.4 VM computed variables
-// 1.5 VM functions
-//
-// 2 VM private/fileprivate extension
-// 2.1 VM computed variables (private/fileprivate)
-// 2.1 VM functions (private/fileprivate)
-
-
-// MARK: - 1
 class ContentViewModel: ObservableObject {
     
-    // MARK: - 1.1
-    private let fakeVersionUseCase = VersionUseCase(client: FakeRemoteClient())
-    private let beVersionUseCase = VersionUseCase(client: KtorRemoteClient())
-    private var asyncTimeFlowHandle: Task<Void, Error>?
-    private var getBackendVersionTask: Task<Void, Error>?
-    
-    // MARK: - 1.2
     @Published var isLoading: Set<Content> = .init()
     @Published var error: AppError?
     @Published var appVersion: String?
@@ -40,17 +18,24 @@ class ContentViewModel: ObservableObject {
         }
     }
     
-    // MARK: - 1.3
+    private let fakeVersionUseCase = VersionUseCase(client: FakeRemoteClient())
+    private let beVersionUseCase = VersionUseCase(client: KtorRemoteClient())
+    private var asyncTimeFlowHandle: Task<Void, Error>?
+    private var getBackendVersionTask: Task<Void, Error>?
+    
     init() {
         loadInitialData()
     }
     
-    // MARK: - 1.4
     var clockIsRunning: Bool { isLoading.contains(.timer) }
     var isLoadingRemoteVersion: Bool { isLoading.contains(.beVersion) }
     var chatUseCase: ChatUseCase { ChatUseCase(client: useFake ? FakeRemoteClient() : KtorRemoteClient()) }
     
-    // MARK: - 1.5
+    private var versionUseCase: VersionUseCase {
+        // TODO: implement DI
+        useFake ? fakeVersionUseCase : beVersionUseCase
+    }
+    
     func loadInitialData() {
         loadLocalVersion()
     }
@@ -72,24 +57,9 @@ class ContentViewModel: ObservableObject {
         }
     }
     
-}
-
-// MARK: - 2
-
-private extension ContentViewModel {
-    
-    // MARK: - 2.1
-    
-    var versionUseCase: VersionUseCase {
-        // TODO: implement DI
-        useFake ? fakeVersionUseCase : beVersionUseCase
-    }
-    
-    // MARK: - 2.2
-    
     // Use asyncFunction to create cancelable async call.
     // Without asyncFunction function will work async way but with no cancelation support.
-    func getBackendVersionAsync() {
+    private func getBackendVersionAsync() {
         getBackendVersionTask?.cancel()
         getBackendVersionTask = Task { @MainActor in
             isLoading.insert(.beVersion); defer { isLoading.remove(.beVersion) }
@@ -104,7 +74,7 @@ private extension ContentViewModel {
     
     // Use asyncSequence to create cancelable async sequence call.
     // Without asyncSequence function will work in closure way, with no cancelation support.
-    func startTimer() {
+    private func startTimer() {
         stopTimer()
         asyncTimeFlowHandle?.cancel()
         asyncTimeFlowHandle = Task { @MainActor in
@@ -120,7 +90,7 @@ private extension ContentViewModel {
     }
     
     // To cancel sequence, apply standard async/await approach
-    func stopTimer() {
+    private func stopTimer() {
         asyncTimeFlowHandle?.cancel()
         asyncTimeFlowHandle = nil
         clock = nil
@@ -128,10 +98,7 @@ private extension ContentViewModel {
     
 }
 
-// MARK: - 3
-
 extension ContentViewModel {
-    
     enum Content: Hashable {
         case timer, beVersion
     }
