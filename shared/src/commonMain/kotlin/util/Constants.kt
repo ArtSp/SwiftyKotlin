@@ -2,7 +2,7 @@ package util
 
 sealed class Constants {
     companion object {
-        const val SERVER_IP = "192.168.8.188"
+        const val SERVER_IP = "0.0.0.0"
         const val SERVER_PORT = 8080
         const val BASE_URL = "http://$SERVER_IP:$SERVER_PORT"
     }
