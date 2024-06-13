@@ -4,10 +4,6 @@ struct ContentView: View {
     
     @StateObject var viewModel = ContentViewModel()
     
-    func toggleTimer() {
-        viewModel.toggleTimer()
-    }
-    
     var body: some View {
         NavigationStack {
             VStack {
@@ -99,7 +95,6 @@ struct ContentView: View {
         }
         
     }
-    
     func clockSectionContent(timerIsRunning: Bool) -> some View {
         VStack {
             Text(viewModel.clock ?? "Timer stopped")
@@ -113,6 +108,10 @@ struct ContentView: View {
         .padding()
         .background(Color.gray.opacity(0.1))
         .cornerRadius(8.0)
+    }
+
+    func toggleTimer() {
+        viewModel.toggleTimer()
     }
 }
 

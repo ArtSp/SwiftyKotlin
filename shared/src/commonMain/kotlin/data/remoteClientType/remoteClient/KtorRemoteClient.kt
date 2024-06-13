@@ -3,7 +3,7 @@ package data.remoteClientType.remoteClient
 import data.remote.KtorClient
 import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
-import data.remote.models.chat.MessageDTO
+import data.remote.models.chat.*
 import data.remoteClientType.ChatInput
 import data.remoteClientType.ChatOutput
 import data.remoteClientType.RemoteClientType
@@ -12,8 +12,8 @@ import domain.models.AppException
 import io.ktor.client.call.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.serialization.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import util.Constants
 
 class KtorRemoteClient: RemoteClientType {
@@ -45,7 +45,59 @@ class KtorRemoteClient: RemoteClientType {
         }
     }
 
-    override fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
-        TODO("Not yet implemented")
+    override suspend fun establishChatConnection(input: SharedFlow<ChatInput>): Flow<ChatOutput> {
+        return flow {
+            httpClient.getSocket(Constants.Path.WS_SERVER_CHAT) {
+                CoroutineScope(it.coroutineContext).launch { it.outgoingMessages(input) }
+                it.incomingMessages(this)
+            }
+        }
     }
 }
+
+private suspend fun DefaultClientWebSocketSession.outgoingMessages(input: Flow<ChatInput>) {
+    input.collect {
+        when (it) {
+            is ChatInput.Connect ->
+                sendSerialized(it.userConnectionDTO)
+            is ChatInput.Message ->
+                sendSerialized(it.messageDTO)
+            is ChatInput.Typing -> {
+            //TODO: Not implemented
+            }
+        }
+    }
+}
+
+private suspend fun DefaultClientWebSocketSession.incomingMessages(output: FlowCollector<ChatOutput>) {
+    try {
+        for (frame in incoming) {
+            try {
+                converter?.deserialize<ConnectionsDTO>(frame)?.let {
+                    output.emit(ChatOutput.Connections(it))
+                }
+            } catch (_: Throwable) {  }
+
+            try {
+                converter?.deserialize<UserDTO>(frame)?.let {
+                    output.emit(ChatOutput.User(it))
+                }
+            } catch (_: Throwable) {  }
+
+            try {
+                converter?.deserialize<MessageDTO>(frame)?.let {
+                    output.emit(ChatOutput.Message(it))
+                }
+            } catch (_: Throwable) {  }
+
+            try {
+                converter?.deserialize<MessageStatusDTO>(frame)?.let {
+                    output.emit(ChatOutput.MessageStatus(it))
+                }
+            } catch (_: Throwable) {  }
+        }
+    } catch (e: Exception) {
+        println("Error while receiving: " + e.message)
+    }
+}
+

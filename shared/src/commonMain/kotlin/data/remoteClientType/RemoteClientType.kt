@@ -2,23 +2,25 @@ package data.remoteClientType
 
 import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
-import data.remote.models.chat.MessageDTO
-import data.remote.models.chat.UserDTO
+import data.remote.models.chat.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 
 interface RemoteClientType {
     suspend fun getServerVersion(): AppVersionDTO
     fun getServerDate(): Flow<ServerDateDTO>
-    fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput>
+    suspend fun establishChatConnection(input: SharedFlow<ChatInput>): Flow<ChatOutput>
 }
 
 sealed class ChatInput {
-    data class Connect(val name: String): ChatInput()
+    data class Connect(val userConnectionDTO: UserConnectionDTO): ChatInput()
     data class Typing(val isTyping: Boolean): ChatInput()
     data class Message(val messageDTO: MessageDTO): ChatInput()
 }
 
 sealed class ChatOutput {
+    data class MessageStatus(val messageStatusDTO: MessageStatusDTO): ChatOutput()
     data class Message(val messageDTO: MessageDTO): ChatOutput()
     data class User(val userDTO: UserDTO): ChatOutput()
+    data class Connections(val connectionsDTO: ConnectionsDTO): ChatOutput()
 }

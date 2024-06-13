@@ -37,7 +37,6 @@ class ChatViewModel: ObservableObject {
         }
     }
     
-    
     private func connect() {
         getBackendDateAsync()
         establishChatConnection()

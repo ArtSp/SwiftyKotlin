@@ -9,7 +9,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.*
 import io.ktor.utils.io.errors.IOException
+import kotlinx.serialization.json.Json
 import util.Constants
 
 expect fun createHttpClient(): HttpClient
@@ -26,7 +28,7 @@ class KtorClient {
             method = HttpMethod.Get,
             host = Constants.SERVER_IP,
             port = Constants.SERVER_PORT,
-            path = path
+            path = path,
         ) {
             configureSession(this)
         }
