@@ -18,6 +18,9 @@ struct ChatView: View {
                 .foregroundStyle(.gray)
             }
             
+            Text("\(viewModel.connectedUsers) users connected")
+                .font(.footnote)
+
             chatContentView
         }
         .navigationTitle("Chat")
@@ -44,7 +47,6 @@ struct ChatView: View {
         ScrollView(.vertical) {
             VStack {
                 VStack {
-                    Text("Messages: \(viewModel.messages.count)")
                     ForEach(viewModel.messages, id: \.self) { message in
                         
                         VStack(alignment: .leading) {

@@ -16,9 +16,14 @@ import kotlinx.datetime.Clock
 class ChatUseCase(
     private val client: RemoteClientType
 ) {
+
     private var user: UserDTO? = null
     private val chatInputFlow = MutableSharedFlow<ChatInput>()
     private var messages: MutableList<ChatMessage> = mutableListOf()
+
+    @NativeCoroutines
+    val connectionsFlow = MutableSharedFlow<Int>()
+
 
     @NativeCoroutines
     fun getServerDate(): Flow<ServerDate> {
@@ -34,10 +39,13 @@ class ChatUseCase(
                     // FIXME: Not working, but works on 44 or in other places.
                     chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
                 }
+                .onCompletion {
+                    connectionsFlow.emit(0)
+                }
                 .collect {
                     when (it) {
                         is ChatOutput.Connections -> {
-                            println("There are ${it.connectionsDTO.count} connections")
+                            connectionsFlow.emit(it.connectionsDTO.count)
                             // FIXME: Working, but must be in line 34.
                             chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
                         }
@@ -47,7 +55,6 @@ class ChatUseCase(
 
                         is ChatOutput.User -> {
                             user = it.userDTO
-                            println("User connected from os ${it.userDTO.os}")
                         }
 
                         is ChatOutput.Message -> {
