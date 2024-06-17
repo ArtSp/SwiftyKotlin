@@ -81,7 +81,11 @@ class ContentViewModel: ObservableObject {
         asyncTimeFlowHandle = Task { @MainActor in
             isLoading.insert(.timer); defer { isLoading.remove(.timer) }
             do {
-                for try await element in asyncSequence(for: versionUseCase.timeFlow()) {
+                for try await element in asyncSequence(
+                    for: versionUseCase.timeFlow(
+                        dateFormat: "dd-MM-yyyy HH:mm:ss"
+                    )
+                ) {
                     clock = element
                 }
             } catch {

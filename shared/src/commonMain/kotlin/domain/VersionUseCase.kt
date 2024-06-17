@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import util.dateString
 import util.getPlatform
 
 class VersionUseCase(
@@ -31,11 +29,15 @@ class VersionUseCase(
     }
 
     @NativeCoroutines
-    fun timeFlow(): Flow<String> = flow { // flow builder
+    fun timeFlow(
+        dateFormat: String
+    ): Flow<String> = flow { // flow builder
         while (currentCoroutineContext().isActive) {
             val now: Instant = Clock.System.now()
-            val thisTime: LocalTime = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
-            emit(thisTime.toString())
+            val dateStr =  now.dateString(dateFormat)
+            dateStr?.let {
+                emit(it)
+            }
             delay(1_000 / 60)
         }
     }
