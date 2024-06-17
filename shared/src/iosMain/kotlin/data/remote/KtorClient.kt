@@ -14,7 +14,7 @@ actual fun createHttpClient(): HttpClient {
             json()
         }
         install(WebSockets) {
-            contentConverter = KotlinxWebsocketSerializationConverter(Json)
+            contentConverter = KotlinxWebsocketSerializationConverter(Json { ignoreUnknownKeys = true })
         }
     }
 }

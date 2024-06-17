@@ -4,13 +4,12 @@ import domain.models.AppError
 import domain.models.AppException
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
-import io.ktor.client.request.accept
-import io.ktor.client.request.get
-import io.ktor.client.request.url
+import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
 import io.ktor.utils.io.errors.IOException
 import util.Constants
+import util.getPlatform
 
 expect fun createHttpClient(): HttpClient
 
@@ -26,7 +25,8 @@ class KtorClient {
             method = HttpMethod.Get,
             host = Constants.SERVER_IP,
             port = Constants.SERVER_PORT,
-            path = path
+            path = path,
+            request = { header("os", "${getPlatform().os}") }
         ) {
             configureSession(this)
         }

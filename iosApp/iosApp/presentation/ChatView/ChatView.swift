@@ -1,5 +1,5 @@
-import SwiftUI
 import Shared
+import SwiftUI
 
 struct ChatView: View {
     
@@ -18,6 +18,9 @@ struct ChatView: View {
                 .foregroundStyle(.gray)
             }
             
+            Text("\(viewModel.connectedUsers) users connected")
+                .font(.footnote)
+
             chatContentView
         }
         .navigationTitle("Chat")
@@ -44,10 +47,14 @@ struct ChatView: View {
         ScrollView(.vertical) {
             VStack {
                 VStack {
-                    Text("Messages: \(viewModel.messages.count)")
                     ForEach(viewModel.messages, id: \.self) { message in
                         
-                        Text(message.text)
+                        VStack(alignment: .leading) {
+                            Text(message.sender)
+                                .font(.caption2)
+                                .opacity(0.3)
+                            Text(message.text)
+                        }
                             .foregroundStyle(Color.white)
                             .padding()
                             .background(
@@ -74,7 +81,10 @@ private extension ChatMessage {
 }
 
 struct ChatView_Previews: PreviewProvider {
-    static let vm = ChatViewModel(chatUseCase: ChatUseCase(client: FakeRemoteClient()))
+    static let vm = ChatViewModel(
+        userName: "Preview",
+        chatUseCase: ChatUseCase(client: FakeRemoteClient())
+    )
     
     static var previews: some View {
         ChatView(viewModel: vm)

@@ -10,18 +10,25 @@ class ChatViewModel: ObservableObject {
     @Published var error: AppError?
     @Published var message: String = ""
     @Published var messages: [ChatMessage] = []
+    @Published var connectedUsers: Int = 0
     
+    private let userName: String
     private let chatUseCase: ChatUseCase
     private var asyncServerTimeFlowHandle: Task<Void, Error>?
     private var asyncChatFlowHandle: Task<Void, Error>?
+    private var asyncChatConnectionsHandle: Task<Void, Error>?
     private var typingCancelable: AnyCancellable?
     
-    init(chatUseCase: ChatUseCase) {
+    init(
+        userName: String,
+        chatUseCase: ChatUseCase
+    ) {
+        self.userName = userName
         self.chatUseCase = chatUseCase
         connect()
     }
     
-    var sendDisabled: Bool { message.isEmpty }
+    var sendDisabled: Bool { message.isEmpty || connectedUsers < 1 }
     
     func sendMessage() {
         guard !message.isEmpty else { return }
@@ -37,10 +44,10 @@ class ChatViewModel: ObservableObject {
         }
     }
     
-    
     private func connect() {
         getBackendDateAsync()
         establishChatConnection()
+        listenActiveConnections()
     }
     
     private func establishChatConnection() {
@@ -48,8 +55,21 @@ class ChatViewModel: ObservableObject {
         asyncChatFlowHandle = Task { @MainActor in
             isLoading.insert(.chat); defer { isLoading.remove(.chat) }
             do {
-                for try await element in asyncSequence(for: chatUseCase.establishChatConnection()) {
+                for try await element in asyncSequence(for: chatUseCase.establishChatConnection(userName: userName)) {
                     messages = element
+                }
+            } catch {
+                self.error = error.appError
+            }
+        }
+    }
+
+    private func listenActiveConnections() {
+        asyncChatConnectionsHandle?.cancel()
+        asyncChatConnectionsHandle = Task { @MainActor in
+            do {
+                for try await element in asyncSequence(for: chatUseCase.connectionsFlow) {
+                    connectedUsers = element.intValue
                 }
             } catch {
                 self.error = error.appError
