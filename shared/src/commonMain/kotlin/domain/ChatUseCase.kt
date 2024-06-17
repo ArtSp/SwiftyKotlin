@@ -10,7 +10,6 @@ import data.remoteClientType.ChatOutput
 import data.remoteClientType.RemoteClientType
 import domain.models.ServerDate
 import domain.models.chat.ChatMessage
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
 
@@ -19,8 +18,6 @@ class ChatUseCase(
 ) {
     private var user: UserDTO? = null
     private val chatInputFlow = MutableSharedFlow<ChatInput>()
-    private var chatOutputFlow = MutableSharedFlow<ChatOutput>()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var messages: MutableList<ChatMessage> = mutableListOf()
 
     @NativeCoroutines
@@ -29,20 +26,20 @@ class ChatUseCase(
     }
     
     @NativeCoroutines
-    fun establishChatConnection(): Flow<List<ChatMessage>> {
+    fun establishChatConnection(userName: String): Flow<List<ChatMessage>> {
         return flow {
             client
                 .establishChatConnection(chatInputFlow)
                 .onStart {
-                    // FIXME: Not working, but works on line 87
-                    coroutineScope.launch {
-                        chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(name = "Bob")))
-                    }
+                    // FIXME: Not working, but works on 44 or in other places.
+                    chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
                 }
                 .collect {
                     when (it) {
                         is ChatOutput.Connections -> {
                             println("There are ${it.connectionsDTO.count} connections")
+                            // FIXME: Working, but must be in line 34.
+                            chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
                         }
                         is ChatOutput.MessageStatus -> {
                         // TODO: not implemented
@@ -82,12 +79,6 @@ class ChatUseCase(
             )
             chatInputFlow.emit(ChatInput.Message(messageDTO))
         }
-
-        // NOTE: Remove when fixed --
-        if (user == null) {
-            chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(name = "Dubina")))
-        }
-        // --
     }
 }
 

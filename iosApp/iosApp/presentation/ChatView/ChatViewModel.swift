@@ -11,12 +11,17 @@ class ChatViewModel: ObservableObject {
     @Published var message: String = ""
     @Published var messages: [ChatMessage] = []
     
+    private let userName: String
     private let chatUseCase: ChatUseCase
     private var asyncServerTimeFlowHandle: Task<Void, Error>?
     private var asyncChatFlowHandle: Task<Void, Error>?
     private var typingCancelable: AnyCancellable?
     
-    init(chatUseCase: ChatUseCase) {
+    init(
+        userName: String,
+        chatUseCase: ChatUseCase
+    ) {
+        self.userName = userName
         self.chatUseCase = chatUseCase
         connect()
     }
@@ -47,7 +52,7 @@ class ChatViewModel: ObservableObject {
         asyncChatFlowHandle = Task { @MainActor in
             isLoading.insert(.chat); defer { isLoading.remove(.chat) }
             do {
-                for try await element in asyncSequence(for: chatUseCase.establishChatConnection()) {
+                for try await element in asyncSequence(for: chatUseCase.establishChatConnection(userName: userName)) {
                     messages = element
                 }
             } catch {

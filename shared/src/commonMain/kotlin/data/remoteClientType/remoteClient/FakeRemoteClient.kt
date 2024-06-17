@@ -2,6 +2,7 @@ package data.remoteClientType.remoteClient
 
 import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
+import data.remote.models.chat.ConnectionsDTO
 import data.remote.models.chat.UserDTO
 import data.remoteClientType.ChatInput
 import data.remoteClientType.ChatOutput
@@ -35,6 +36,9 @@ class FakeRemoteClient: RemoteClientType {
     override suspend fun establishChatConnection(input: SharedFlow<ChatInput>): Flow<ChatOutput> {
         return flow {
             input
+                .onStart {
+                    emit(ChatOutput.Connections(ConnectionsDTO(count = 1) ))
+                }
                 .collect {
                     when (it) {
                         is ChatInput.Connect -> {

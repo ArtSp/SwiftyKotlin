@@ -10,7 +10,8 @@ class ContentViewModel: ObservableObject {
     @Published var beVersion: String?
     @Published var clock: String?
     @Published var counter: Int = 0
-    @Published var useFake: Bool = true {
+    @Published var userName: String = "User"
+    @Published var useFake: Bool = false {
         didSet {
             appVersion = nil
             beVersion = nil

@@ -10,24 +10,26 @@ struct ContentView: View {
                 ScrollView(.vertical) {
                     LazyVStack(spacing: 20, pinnedViews: .sectionHeaders) {
                         
-                        Section(header: SectionHeaderView("VM specific", module: "Platform")) {
-                            iosSpecificSectionContent
-                        }
-                        
-                        Section(header: SectionHeaderView("Local timer", module: "Shared")) {
-                            clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
-                        }
-                        
-                        Section(header: SectionHeaderView("Local version", module: "Shared")) {
-                            localVersionSectionContent
+                        Section(header: SectionHeaderView("Remote Chat", module: "Shared")) {
+                            chatSectionContent
                         }
                         
                         Section(header: SectionHeaderView("Remote version", module: "Shared")) {
                             remoteVersionSectionContent
                         }
                         
-                        Section(header: SectionHeaderView("Chat", module: "Shared")) {
-                            NavigationLink("Open chat", value: Destination.chat)
+                        Divider()
+                        
+                        Section(header: SectionHeaderView("Local version", module: "Shared")) {
+                            localVersionSectionContent
+                        }
+                        
+                        Section(header: SectionHeaderView("Local timer", module: "Shared")) {
+                            clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
+                        }
+                        
+                        Section(header: SectionHeaderView("Local VM specific", module: "Platform")) {
+                            iosSpecificSectionContent
                         }
                     }.padding()
                 }
@@ -38,10 +40,11 @@ struct ContentView: View {
             }
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {
-                case .chat: 
-                    ChatView(viewModel: ChatViewModel(chatUseCase: viewModel.chatUseCase))
+                case let .chat(userName):
+                    ChatView(viewModel: ChatViewModel(userName: userName, chatUseCase: viewModel.chatUseCase))
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Image("civita_logo_white")
@@ -70,7 +73,7 @@ struct ContentView: View {
     }
     
     var localVersionSectionContent: some View {
-        VStack {
+        HStack {
             Image(systemName: "swift")
                 .foregroundColor(.accentColor)
             Text(viewModel.appVersion ?? "UNKNOWN")
@@ -95,6 +98,16 @@ struct ContentView: View {
         }
         
     }
+    
+    var chatSectionContent: some View {
+        HStack {
+            Text("Name:")
+            TextField("Username", text: $viewModel.userName)
+            NavigationLink("Open", value: Destination.chat(userName: viewModel.userName))
+        }
+        .textFieldStyle(.roundedBorder)
+    }
+        
     func clockSectionContent(timerIsRunning: Bool) -> some View {
         VStack {
             Text(viewModel.clock ?? "Timer stopped")
@@ -143,7 +156,7 @@ extension ContentView {
 
 extension ContentView {
     enum Destination: Hashable {
-        case chat
+        case chat(userName: String)
     }
 }
 
