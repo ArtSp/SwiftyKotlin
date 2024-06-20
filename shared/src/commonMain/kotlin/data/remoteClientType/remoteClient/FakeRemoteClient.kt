@@ -33,7 +33,7 @@ class FakeRemoteClient: RemoteClientType {
         }
     }
 
-    override suspend fun establishChatConnection(input: SharedFlow<ChatInput>): Flow<ChatOutput> {
+    override suspend fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
         return flow {
             input
                 .onStart {

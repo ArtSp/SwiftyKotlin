@@ -34,11 +34,12 @@ class ChatUseCase(
     fun establishChatConnection(userName: String): Flow<List<ChatMessage>> {
         return flow {
             client
-                .establishChatConnection(chatInputFlow)
-                .onStart {
-                    // FIXME: Not working, but works on 44 or in other places.
-                    chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
-                }
+                .establishChatConnection(
+                    chatInputFlow
+                        .onStart {
+                            emit(ChatInput.Connect(UserConnectionDTO(userName)))
+                        }
+                )
                 .onCompletion {
                     connectionsFlow.emit(0)
                 }
@@ -46,9 +47,8 @@ class ChatUseCase(
                     when (it) {
                         is ChatOutput.Connections -> {
                             connectionsFlow.emit(it.connectionsDTO.count)
-                            // FIXME: Working, but must be in line 34.
-                            chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
                         }
+                        
                         is ChatOutput.MessageStatus -> {
                         // TODO: not implemented
                         }

@@ -45,7 +45,7 @@ class KtorRemoteClient: RemoteClientType {
         }
     }
 
-    override suspend fun establishChatConnection(input: SharedFlow<ChatInput>): Flow<ChatOutput> {
+    override suspend fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
         return flow {
             httpClient.getSocket(Constants.Path.WS_SERVER_CHAT) {
                 CoroutineScope(it.coroutineContext).launch { it.outgoingMessages(input) }

@@ -4,12 +4,11 @@ import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
 import data.remote.models.chat.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 
 interface RemoteClientType {
     suspend fun getServerVersion(): AppVersionDTO
     fun getServerDate(): Flow<ServerDateDTO>
-    suspend fun establishChatConnection(input: SharedFlow<ChatInput>): Flow<ChatOutput>
+    suspend fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput>
 }
 
 sealed class ChatInput {
