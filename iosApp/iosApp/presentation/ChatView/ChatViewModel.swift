@@ -11,13 +11,11 @@ class ChatViewModel: ObservableObject {
     @Published var message: String = ""
     @Published var messages: [ChatMessage] = []
     @Published var connectedUsers: Int = 0
+    @Published var remoteIsTyping: Bool = false
     
     private let userName: String
     private let chatUseCase: ChatUseCase
-    private var asyncServerTimeFlowHandle: Task<Void, Error>?
-    private var asyncChatFlowHandle: Task<Void, Error>?
-    private var asyncChatConnectionsHandle: Task<Void, Error>?
-    private var typingCancelable: AnyCancellable?
+    private var asyncHandles: [AsyncTask: Task<Void, Error>] = [:]
     
     init(
         userName: String,
@@ -44,15 +42,21 @@ class ChatViewModel: ObservableObject {
         }
     }
     
+    func sendIsTyping() {
+        guard !message.isEmpty else { return }
+        chatUseCase.sendIsTyping()
+    }
+
     private func connect() {
         getBackendDateAsync()
         establishChatConnection()
         listenActiveConnections()
+        listenIsTyping()
     }
     
     private func establishChatConnection() {
-        asyncChatFlowHandle?.cancel()
-        asyncChatFlowHandle = Task { @MainActor in
+        asyncHandles[.chat]?.cancel()
+        asyncHandles[.chat] = Task { @MainActor in
             isLoading.insert(.chat); defer { isLoading.remove(.chat) }
             do {
                 for try await element in asyncSequence(for: chatUseCase.establishChatConnection(userName: userName)) {
@@ -65,8 +69,8 @@ class ChatViewModel: ObservableObject {
     }
 
     private func listenActiveConnections() {
-        asyncChatConnectionsHandle?.cancel()
-        asyncChatConnectionsHandle = Task { @MainActor in
+        asyncHandles[.chatConnections]?.cancel()
+        asyncHandles[.chatConnections] = Task { @MainActor in
             do {
                 for try await element in asyncSequence(for: chatUseCase.connectionsFlow) {
                     connectedUsers = element.intValue
@@ -76,11 +80,24 @@ class ChatViewModel: ObservableObject {
             }
         }
     }
+
+    private func listenIsTyping() {
+        asyncHandles[.chatTyping]?.cancel()
+        asyncHandles[.chatTyping] = Task { @MainActor in
+            do {
+                for try await element in asyncSequence(for: chatUseCase.remoteIsTypingFlow) {
+                    remoteIsTyping = element.boolValue
+                }
+            } catch {
+                self.error = error.appError
+            }
+        }
+    }
     
     private func getBackendDateAsync() {
         serverDate = nil
-        asyncServerTimeFlowHandle?.cancel()
-        asyncServerTimeFlowHandle = Task { @MainActor in
+        asyncHandles[.serverTime]?.cancel()
+        asyncHandles[.serverTime] = Task { @MainActor in
             isLoading.insert(.serverDate); defer { isLoading.remove(.serverDate) }
             do {
                 for try await element in asyncSequence(for: chatUseCase.getServerDate()) {
@@ -95,6 +112,10 @@ class ChatViewModel: ObservableObject {
 }
 
 extension ChatViewModel {
+
+    private enum AsyncTask: Hashable {
+        case serverTime, chat, chatConnections, chatTyping
+    }
     enum Content: Hashable {
         case serverDate, chat, sendMessage
     }

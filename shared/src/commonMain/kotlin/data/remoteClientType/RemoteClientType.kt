@@ -13,7 +13,7 @@ interface RemoteClientType {
 
 sealed class ChatInput {
     data class Connect(val userConnectionDTO: UserConnectionDTO): ChatInput()
-    data class Typing(val isTyping: Boolean): ChatInput()
+    data class Typing(val messageStatusDTO: MessageStatusDTO): ChatInput()
     data class Message(val messageDTO: MessageDTO): ChatInput()
 }
 

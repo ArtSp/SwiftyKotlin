@@ -3,6 +3,7 @@ package data.remoteClientType.remoteClient
 import data.remote.models.AppVersionDTO
 import data.remote.models.ServerDateDTO
 import data.remote.models.chat.ConnectionsDTO
+import data.remote.models.chat.MessageStatusDTO
 import data.remote.models.chat.UserDTO
 import data.remoteClientType.ChatInput
 import data.remoteClientType.ChatOutput
@@ -55,7 +56,11 @@ class FakeRemoteClient: RemoteClientType {
                             emit(ChatOutput.Message(it.messageDTO))
                         }
 
-                        is ChatInput.Typing -> TODO()
+                        is ChatInput.Typing -> {
+                            delay(0.5.seconds)
+                            emit(ChatOutput.MessageStatus(it.messageStatusDTO))
+                        }
+
                     }
                 }
         }

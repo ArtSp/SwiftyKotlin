@@ -63,7 +63,7 @@ private suspend fun DefaultClientWebSocketSession.outgoingMessages(input: Flow<C
             is ChatInput.Message ->
                 sendSerialized(it.messageDTO)
             is ChatInput.Typing -> {
-            //TODO: Not implemented
+                sendSerialized(it.messageStatusDTO)
             }
         }
     }
