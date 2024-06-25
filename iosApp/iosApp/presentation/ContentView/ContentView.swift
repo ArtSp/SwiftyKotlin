@@ -28,6 +28,10 @@ struct ContentView: View {
                             clockSectionContent(timerIsRunning: viewModel.clockIsRunning)
                         }
                         
+                        Section(header: SectionHeaderView("Currency converter", module: "Shared")) {
+                            currecnyConverterContent
+                        }
+                        
                         Section(header: SectionHeaderView("Local VM specific", module: "Platform")) {
                             iosSpecificSectionContent
                         }
@@ -107,6 +111,23 @@ struct ContentView: View {
         }
         .textFieldStyle(.roundedBorder)
     }
+    
+    var currecnyConverterContent: some View {
+        VStack {
+            HStack {
+                Text("Local: ")
+                TextField("value", text: $viewModel.localCurrencyVal)
+                Button("Convert") {
+                    convertCurrency()
+                }
+            }
+            HStack {
+                Text("Converted value: \(viewModel.convertedCurrencyVal)")
+                Spacer()
+            }
+        }
+        .textFieldStyle(.roundedBorder)
+    }
         
     func clockSectionContent(timerIsRunning: Bool) -> some View {
         VStack {
@@ -125,6 +146,10 @@ struct ContentView: View {
 
     func toggleTimer() {
         viewModel.toggleTimer()
+    }
+    
+    func convertCurrency() {
+        viewModel.convertCurrency()
     }
 }
 
