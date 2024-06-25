@@ -21,6 +21,11 @@ struct ChatView: View {
             Text("\(viewModel.connectedUsers) users connected")
                 .font(.footnote)
 
+            if viewModel.remoteIsTyping {
+                Text("Remote is typing")
+                    .font(.footnote)
+            }
+
             chatContentView
         }
         .navigationTitle("Chat")
@@ -41,6 +46,9 @@ struct ChatView: View {
                 .padding()
             }
         }
+        .onChange(of: viewModel.message) { _, _ in
+            viewModel.sendIsTyping()
+        }
     }
     
     var chatContentView: some View {
@@ -48,19 +56,22 @@ struct ChatView: View {
             VStack {
                 VStack {
                     ForEach(viewModel.messages, id: \.self) { message in
-                        
                         VStack(alignment: .leading) {
-                            Text(message.sender)
-                                .font(.caption2)
-                                .opacity(0.3)
+                            if !message.isLocal {
+                                Text(message.sender)
+                                    .font(.caption2)
+                                    .opacity(0.3)
+                            }
+                            
                             Text(message.text)
+                                .foregroundStyle(Color.white)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .foregroundStyle(message.bgColor)
+                                )
                         }
-                            .foregroundStyle(Color.white)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .foregroundStyle(message.bgColor)
-                            )
+                            
                             .frame(maxWidth: .infinity, alignment: message.isLocal ? .trailing : .leading)
                     }
                 }

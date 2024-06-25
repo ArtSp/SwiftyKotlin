@@ -2,6 +2,7 @@ package domain
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import data.remote.models.chat.MessageDTO
+import data.remote.models.chat.MessageStatusDTO
 import data.remote.models.chat.UserConnectionDTO
 import data.remote.models.chat.UserDTO
 import data.remote.models.toDomain
@@ -10,20 +11,34 @@ import data.remoteClientType.ChatOutput
 import data.remoteClientType.RemoteClientType
 import domain.models.ServerDate
 import domain.models.chat.ChatMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
 
 class ChatUseCase(
     private val client: RemoteClientType
-) {
+): CoroutineScope {
 
+    override val coroutineContext: CoroutineContext = Job()
     private var user: UserDTO? = null
     private val chatInputFlow = MutableSharedFlow<ChatInput>()
     private var messages: MutableList<ChatMessage> = mutableListOf()
 
+    private val _localIsTypingFlow = MutableSharedFlow<Boolean>()
+    private val _remoteIsTypingFlow = MutableSharedFlow<Boolean>()
+
     @NativeCoroutines
     val connectionsFlow = MutableSharedFlow<Int>()
+    @NativeCoroutines
+    val remoteIsTypingFlow = MutableSharedFlow<Boolean>()
 
+    init {
+        handleTyping()
+    }
 
     @NativeCoroutines
     fun getServerDate(): Flow<ServerDate> {
@@ -34,11 +49,12 @@ class ChatUseCase(
     fun establishChatConnection(userName: String): Flow<List<ChatMessage>> {
         return flow {
             client
-                .establishChatConnection(chatInputFlow)
-                .onStart {
-                    // FIXME: Not working, but works on 44 or in other places.
-                    chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
-                }
+                .establishChatConnection(
+                    chatInputFlow
+                        .onStart {
+                            emit(ChatInput.Connect(UserConnectionDTO(userName)))
+                        }
+                )
                 .onCompletion {
                     connectionsFlow.emit(0)
                 }
@@ -46,11 +62,10 @@ class ChatUseCase(
                     when (it) {
                         is ChatOutput.Connections -> {
                             connectionsFlow.emit(it.connectionsDTO.count)
-                            // FIXME: Working, but must be in line 34.
-                            chatInputFlow.emit(ChatInput.Connect(UserConnectionDTO(userName)))
                         }
+                        
                         is ChatOutput.MessageStatus -> {
-                        // TODO: not implemented
+                            _remoteIsTypingFlow.emit(it.messageStatusDTO.isTyping)
                         }
 
                         is ChatOutput.User -> {
@@ -85,6 +100,33 @@ class ChatUseCase(
                 message = text
             )
             chatInputFlow.emit(ChatInput.Message(messageDTO))
+        }
+    }
+
+    fun sendIsTyping() {
+        launch { _localIsTypingFlow.emit(true) }
+    }
+
+    private fun handleTyping() {
+        // Send events
+        launch {
+            _localIsTypingFlow
+                .sample(1.seconds)
+                .collect {
+                    user?.let {
+                        val messageStatus = MessageStatusDTO(it, true)
+                        chatInputFlow.emit(ChatInput.Typing(messageStatus))
+                    }
+                }
+        }
+
+        // Receive events
+        launch {
+            _remoteIsTypingFlow
+                .onEach { remoteIsTypingFlow.emit(it) }
+                .debounce(3.seconds)
+                .filter { it }
+                .collect { remoteIsTypingFlow.emit(false) }
         }
     }
 }
