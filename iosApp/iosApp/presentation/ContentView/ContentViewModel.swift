@@ -11,6 +11,8 @@ class ContentViewModel: ObservableObject {
     @Published var clock: String?
     @Published var counter: Int = 0
     @Published var userName: String = "User"
+    @Published var localCurrencyVal: String = ""
+    @Published var convertedCurrencyVal: String = ""
     @Published var useFake: Bool = false {
         didSet {
             appVersion = nil
@@ -21,6 +23,7 @@ class ContentViewModel: ObservableObject {
     
     private let fakeVersionUseCase = VersionUseCase(client: FakeRemoteClient())
     private let beVersionUseCase = VersionUseCase(client: KtorRemoteClient())
+    private let currencyUseCase = CurrencyUseCase(client: FakeRemoteClient())
     private var asyncTimeFlowHandle: Task<Void, Error>?
     private var getBackendVersionTask: Task<Void, Error>?
     
@@ -55,6 +58,15 @@ class ContentViewModel: ObservableObject {
             stopTimer()
         } else {
             startTimer()
+        }
+    }
+    
+    func convertCurrency() {
+        if let localValue = Double(localCurrencyVal) {
+            convertedCurrencyVal = currencyUseCase
+                .getLocalToUSDCurrency(localVal: localValue) ?? ""
+        } else {
+            convertedCurrencyVal = ""
         }
     }
     
