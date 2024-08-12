@@ -1,14 +1,14 @@
 package domain
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
+import data.remote.ChatInput
+import data.remote.ChatOutput
+import data.remote.RemoteClientType
 import data.remote.models.chat.MessageDTO
 import data.remote.models.chat.MessageStatusDTO
 import data.remote.models.chat.UserConnectionDTO
 import data.remote.models.chat.UserDTO
 import data.remote.models.toDomain
-import data.remoteClientType.ChatInput
-import data.remoteClientType.ChatOutput
-import data.remoteClientType.RemoteClientType
 import domain.models.ServerDate
 import domain.models.chat.ChatMessage
 import kotlinx.coroutines.CoroutineScope
