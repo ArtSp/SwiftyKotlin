@@ -1,5 +1,5 @@
 {
-  "originHash" : "609133b310e9c4579a1d75e9696445b51bd516493282d44ac82bc290103e37c2",
+  "originHash" : "8d69b4e7d16820d189d91efdad0fc32d94eb3a461a446993732d8ce683f50279",
   "pins" : [
     {
       "identity" : "kmp-nativecoroutines",
@@ -8,6 +8,24 @@
       "state" : {
         "revision" : "c84619cc90d2d4b05787b0a686ad7767e4033ab5",
         "version" : "1.0.0-ALPHA-27"
+      }
+    },
+    {
+      "identity" : "mpfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MP-iOS-2022/MPFoundation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "739226399ef31d30103bcc1355216ca6a8d1f882"
+      }
+    },
+    {
+      "identity" : "mpswiftui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MP-iOS-2022/MPSwiftUI",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c11e9a67dbd3e18a3b6b5a6fc3f3d191f459432d"
       }
     },
     {

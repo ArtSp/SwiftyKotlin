@@ -1,28 +1,38 @@
-import Foundation
-import Shared
-import Combine
-import KMPNativeCoroutinesAsync
 
-class ChatViewModel: ObservableObject {
+import Foundation
+import Combine
+
+extension ChatView: Screen {
+    typealias Destination = Never
+    
+    enum LoadingContent: Hashable {
+        case serverDate, chat, sendMessage
+    }
+}
+
+private extension ChatViewModel {
+
+     enum AsyncTask: Hashable {
+        case serverTime, chat, chatConnections, chatTyping
+    }
+    
+}
+
+class ChatViewModel: ScreenViewModel<ChatView> {
     
     @Published var serverDate: ServerDate?
-    @Published var isLoading: Set<Content> = .init()
-    @Published var error: AppError?
     @Published var message: String = ""
     @Published var messages: [ChatMessage] = []
     @Published var connectedUsers: Int = 0
     @Published var remoteIsTyping: Bool = false
     
     private let userName: String
-    private let chatUseCase: ChatUseCase
     private var asyncHandles: [AsyncTask: Task<Void, Error>] = [:]
     
-    init(
-        userName: String,
-        chatUseCase: ChatUseCase
-    ) {
+    init(userName: String) {
         self.userName = userName
-        self.chatUseCase = chatUseCase
+        super.init()
+        
         connect()
     }
     
@@ -37,7 +47,7 @@ class ChatViewModel: ObservableObject {
                 _ = try await asyncFunction(for: chatUseCase.sendMessage(text: message))
                 message.removeAll()
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
@@ -63,7 +73,7 @@ class ChatViewModel: ObservableObject {
                     messages = element
                 }
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
@@ -76,7 +86,7 @@ class ChatViewModel: ObservableObject {
                     connectedUsers = element.intValue
                 }
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
@@ -89,7 +99,7 @@ class ChatViewModel: ObservableObject {
                     remoteIsTyping = element.boolValue
                 }
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
@@ -104,19 +114,9 @@ class ChatViewModel: ObservableObject {
                     serverDate = element
                 }
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
     
-}
-
-extension ChatViewModel {
-
-    private enum AsyncTask: Hashable {
-        case serverTime, chat, chatConnections, chatTyping
-    }
-    enum Content: Hashable {
-        case serverDate, chat, sendMessage
-    }
 }

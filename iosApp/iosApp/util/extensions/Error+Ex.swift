@@ -10,4 +10,12 @@ extension Error {
     var appException: AppException? {
         (self as NSError).kotlinException as? AppException
     }
+    
+    var alertInfo: AlertInfo {
+        if let appError {
+            return .appError(appError)
+        } else {
+            return .error(self)
+        }
+    }
 }

@@ -4,10 +4,7 @@ import data.remote.ChatInput
 import data.remote.ChatOutput
 import data.remote.KtorClient
 import data.remote.RemoteClientType
-import data.remote.models.AppVersionDTO
-import data.remote.models.AuthDTO
-import data.remote.models.LoginDTO
-import data.remote.models.ServerDateDTO
+import data.remote.models.*
 import data.remote.models.chat.*
 import domain.models.AppError
 import domain.models.AppException
@@ -29,6 +26,11 @@ class KtorRemoteClient: RemoteClientType{
     override suspend fun logout(auth: AuthDTO) {
         TODO("Not yet implemented")
     }
+
+    override suspend fun checkForUpdates(): AppUpdateDTO? {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getServerVersion(): AppVersionDTO {
         return try {
             httpClient

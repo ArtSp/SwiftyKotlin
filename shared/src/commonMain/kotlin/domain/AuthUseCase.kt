@@ -33,9 +33,13 @@ class AuthUseCase(
     }
 
     @NativeCoroutines
-    suspend fun login(userName: String, password: String) {
-        val auth = client.login(LoginDTO(userName, password))
+    suspend fun login(username: String, password: String) {
+        val auth = client.login(LoginDTO(username, password))
         setLoggedIn(auth.toDomain(), Auth.LockState.Unlocked(null))
+    }
+
+    fun logout() {
+        //TODO: Not implemented
     }
 
     fun lock() {

@@ -1,8 +1,8 @@
-import SwiftUI
+import MPSwiftUI
 
-struct ContentView: View {
+struct MainView: LocalizedView {
     
-    @StateObject var viewModel = ContentViewModel()
+    @StateObject var viewModel: MainViewModel = .init()
     
     var body: some View {
         NavigationStack {
@@ -38,15 +38,6 @@ struct ContentView: View {
                     }.padding()
                 }
                 .frame(maxHeight: .infinity)
-                
-                Toggle("Use mock", isOn: $viewModel.useFake)
-                    .padding(.horizontal)
-            }
-            .navigationDestination(for: Destination.self) { destination in
-                switch destination {
-                case let .chat(userName):
-                    ChatView(viewModel: ChatViewModel(userName: userName, chatUseCase: viewModel.chatUseCase))
-                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -58,17 +49,7 @@ struct ContentView: View {
                         .colorInvert()
                 }
             }
-            .alert(
-                isPresented: .init(
-                    get: { viewModel.error != nil },
-                    set: { _ in viewModel.error = nil }
-                )
-            ) {
-                Alert(
-                    title: Text(viewModel.error?.title ?? ""),
-                    message: Text(viewModel.error?.message ?? "")
-                )
-            }
+            .handleAlert(item: $viewModel.alert)
         }
     }
     
@@ -153,7 +134,7 @@ struct ContentView: View {
     }
 }
 
-extension ContentView {
+extension MainView {
     
     struct SectionHeaderView: View {
         let title: LocalizedStringKey
@@ -179,14 +160,8 @@ extension ContentView {
     }
 }
 
-extension ContentView {
-    enum Destination: Hashable {
-        case chat(userName: String)
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+//    MainNavigation {
+        MainView()
+//    }
 }

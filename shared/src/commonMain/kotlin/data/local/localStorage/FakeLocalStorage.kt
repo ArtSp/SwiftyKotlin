@@ -7,7 +7,14 @@ import domain.models.Auth
 class FakeLocalStorage: LocalStorageType {
     
     override var appState: AppState = AppState().also {
-//        it.auth = 
+        it.authStatus = Auth.Status.LoggedIn(
+            auth = Auth(
+                authToken = "fake",
+                refreshToken = "fakeRefresh",
+                expirationDate = null
+            ),
+            lockState = Auth.LockState.Unlocked(null)
+        )
     }
        
 }

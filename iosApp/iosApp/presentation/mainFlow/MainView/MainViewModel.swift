@@ -1,11 +1,20 @@
-import Foundation
-import Shared
-import KMPNativeCoroutinesAsync
 
-class ContentViewModel: ObservableObject {
+import Foundation
+import Combine
+
+extension MainView: Screen {
     
-    @Published var isLoading: Set<Content> = .init()
-    @Published var error: AppError?
+    enum Destination: Hashable {
+        case chat(userName: String)
+    }
+    
+    enum LoadingContent {
+        case timer, beVersion
+    }
+}
+
+class MainViewModel: ScreenViewModel<MainView> {
+    
     @Published var appVersion: String?
     @Published var beVersion: String?
     @Published var clock: String?
@@ -13,39 +22,25 @@ class ContentViewModel: ObservableObject {
     @Published var userName: String = "User"
     @Published var localCurrencyVal: String = ""
     @Published var convertedCurrencyVal: String = ""
-    @Published var useFake: Bool = false {
-        didSet {
-            appVersion = nil
-            beVersion = nil
-            loadInitialData()
-        }
-    }
     
-    private let fakeVersionUseCase = VersionUseCase(client: FakeRemoteClient())
-    private let beVersionUseCase = VersionUseCase(client: KtorRemoteClient())
-    private let currencyUseCase = CurrencyUseCase(client: FakeRemoteClient())
     private var asyncTimeFlowHandle: Task<Void, Error>?
     private var getBackendVersionTask: Task<Void, Error>?
     
-    init() {
+    override init() {
+        super.init()
+        
         loadInitialData()
     }
     
     var clockIsRunning: Bool { isLoading.contains(.timer) }
     var isLoadingRemoteVersion: Bool { isLoading.contains(.beVersion) }
-    var chatUseCase: ChatUseCase { ChatUseCase(client: useFake ? FakeRemoteClient() : KtorRemoteClient()) }
-    
-    private var versionUseCase: VersionUseCase {
-        // TODO: implement DI
-        useFake ? fakeVersionUseCase : beVersionUseCase
-    }
     
     func loadInitialData() {
         loadLocalVersion()
     }
     
     func loadLocalVersion() {
-        let version = versionUseCase.getAppVersion()
+        let version = appUseCase.getAppVersion()
         appVersion = "Platform: \(version.platform), App version: \(version.version)"
     }
     
@@ -63,7 +58,7 @@ class ContentViewModel: ObservableObject {
     
     func convertCurrency() {
         if let localValue = Double(localCurrencyVal) {
-            convertedCurrencyVal = currencyUseCase
+            convertedCurrencyVal = appUseCase
                 .getLocalToUSDCurrency(localVal: localValue) ?? ""
         } else {
             convertedCurrencyVal = ""
@@ -77,10 +72,10 @@ class ContentViewModel: ObservableObject {
         getBackendVersionTask = Task { @MainActor in
             isLoading.insert(.beVersion); defer { isLoading.remove(.beVersion) }
             do {
-                let version = try await asyncFunction(for: versionUseCase.getServerVersion())
+                let version = try await asyncFunction(for: appUseCase.getServerVersion())
                 beVersion = [version.platform, version.version].joined(separator: " ")
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
@@ -94,14 +89,14 @@ class ContentViewModel: ObservableObject {
             isLoading.insert(.timer); defer { isLoading.remove(.timer) }
             do {
                 for try await element in asyncSequence(
-                    for: versionUseCase.timeFlow(
+                    for: appUseCase.timeFlow(
                         dateFormat: "dd-MM-yyyy HH:mm:ss"
                     )
                 ) {
                     clock = element
                 }
             } catch {
-                self.error = error.appError
+                self.alert = error.alertInfo
             }
         }
     }
@@ -115,8 +110,3 @@ class ContentViewModel: ObservableObject {
     
 }
 
-extension ContentViewModel {
-    enum Content: Hashable {
-        case timer, beVersion
-    }
-}

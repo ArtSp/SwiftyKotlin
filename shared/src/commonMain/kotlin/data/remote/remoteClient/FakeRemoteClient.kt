@@ -3,10 +3,7 @@ package data.remote.remoteClient
 import data.remote.ChatInput
 import data.remote.ChatOutput
 import data.remote.RemoteClientType
-import data.remote.models.AppVersionDTO
-import data.remote.models.AuthDTO
-import data.remote.models.LoginDTO
-import data.remote.models.ServerDateDTO
+import data.remote.models.*
 import data.remote.models.chat.ConnectionsDTO
 import data.remote.models.chat.UserDTO
 import kotlinx.coroutines.delay
@@ -33,6 +30,12 @@ class FakeRemoteClient: RemoteClientType {
         delay(requestDelayDuration)
     }
     
+    override suspend fun checkForUpdates(): AppUpdateDTO? {
+        delay(requestDelayDuration)
+        return null
+//        return AppUpdateDTO(url = "127.0.0.1", isReqired = true)
+    }
+
     override suspend fun getServerVersion(): AppVersionDTO {
         return serverVersion
     }

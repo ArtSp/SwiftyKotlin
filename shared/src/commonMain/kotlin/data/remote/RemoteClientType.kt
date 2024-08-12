@@ -1,9 +1,6 @@
 package data.remote
 
-import data.remote.models.AppVersionDTO
-import data.remote.models.AuthDTO
-import data.remote.models.LoginDTO
-import data.remote.models.ServerDateDTO
+import data.remote.models.*
 import data.remote.models.chat.*
 import kotlinx.coroutines.flow.Flow
 
@@ -11,6 +8,7 @@ interface RemoteClientType {
     suspend fun login(login: LoginDTO): AuthDTO
     suspend fun logout(auth: AuthDTO)
     suspend fun getServerVersion(): AppVersionDTO
+    suspend fun checkForUpdates(): AppUpdateDTO?
     fun getServerDate(): Flow<ServerDateDTO>
     fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput>
 }

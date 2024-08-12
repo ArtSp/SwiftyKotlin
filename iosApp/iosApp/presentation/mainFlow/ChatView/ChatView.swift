@@ -1,7 +1,7 @@
-import Shared
-import SwiftUI
 
-struct ChatView: View {
+import MPSwiftUI
+
+struct ChatView: LocalizedView {
     
     @StateObject var viewModel: ChatViewModel
     
@@ -49,6 +49,7 @@ struct ChatView: View {
         .onChange(of: viewModel.message) { _, _ in
             viewModel.sendIsTyping()
         }
+        .handleAlert(item: $viewModel.alert)
     }
     
     var chatContentView: some View {
@@ -93,8 +94,7 @@ private extension ChatMessage {
 
 struct ChatView_Previews: PreviewProvider {
     static let vm = ChatViewModel(
-        userName: "Preview",
-        chatUseCase: ChatUseCase(client: FakeRemoteClient())
+        userName: "Preview"
     )
     
     static var previews: some View {
