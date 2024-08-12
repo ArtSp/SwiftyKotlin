@@ -1,25 +1,38 @@
-package data.remoteClientType.remoteClient
+package data.remote.remoteClient
 
+import data.remote.ChatInput
+import data.remote.ChatOutput
+import data.remote.RemoteClientType
 import data.remote.models.AppVersionDTO
+import data.remote.models.AuthDTO
+import data.remote.models.LoginDTO
 import data.remote.models.ServerDateDTO
 import data.remote.models.chat.ConnectionsDTO
-import data.remote.models.chat.MessageStatusDTO
 import data.remote.models.chat.UserDTO
-import data.remoteClientType.ChatInput
-import data.remoteClientType.ChatOutput
-import data.remoteClientType.RemoteClientType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
 import util.Platform
 import util.getPlatform
+import kotlin.random.Random
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class FakeRemoteClient: RemoteClientType {
 
+    private val requestDelayDuration: Duration get() { return Random.nextDouble(0.1, 1.0).seconds }
     private var serverVersion = AppVersionDTO(platform = "Fake BE", version = "0")
     private val platform = getPlatform()
 
+    override suspend fun login(login: LoginDTO): AuthDTO {
+        delay(requestDelayDuration)
+        return AuthDTO(authToken = "authToken", refreshToken = "refreshToken", expirationDate = null)
+    }
+
+    override suspend fun logout(auth: AuthDTO) {
+        delay(requestDelayDuration)
+    }
+    
     override suspend fun getServerVersion(): AppVersionDTO {
         return serverVersion
     }
@@ -34,7 +47,7 @@ class FakeRemoteClient: RemoteClientType {
         }
     }
 
-    override suspend fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
+    override fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
         return flow {
             input
                 .onStart {

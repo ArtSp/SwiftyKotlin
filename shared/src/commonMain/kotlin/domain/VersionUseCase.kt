@@ -1,8 +1,8 @@
 package domain
 
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
+import data.remote.RemoteClientType
 import data.remote.models.toDomain
-import data.remoteClientType.RemoteClientType
 import domain.models.AppVersion
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay

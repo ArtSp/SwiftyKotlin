@@ -1,12 +1,14 @@
-package data.remoteClientType.remoteClient
+package data.remote.remoteClient
 
+import data.remote.ChatInput
+import data.remote.ChatOutput
 import data.remote.KtorClient
+import data.remote.RemoteClientType
 import data.remote.models.AppVersionDTO
+import data.remote.models.AuthDTO
+import data.remote.models.LoginDTO
 import data.remote.models.ServerDateDTO
 import data.remote.models.chat.*
-import data.remoteClientType.ChatInput
-import data.remoteClientType.ChatOutput
-import data.remoteClientType.RemoteClientType
 import domain.models.AppError
 import domain.models.AppException
 import io.ktor.client.call.*
@@ -16,10 +18,17 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import util.Constants
 
-class KtorRemoteClient: RemoteClientType {
+class KtorRemoteClient: RemoteClientType{
 
     private val httpClient: KtorClient = KtorClient()
 
+    override suspend fun login(login: LoginDTO): AuthDTO {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun logout(auth: AuthDTO) {
+        TODO("Not yet implemented")
+    }
     override suspend fun getServerVersion(): AppVersionDTO {
         return try {
             httpClient
@@ -45,7 +54,7 @@ class KtorRemoteClient: RemoteClientType {
         }
     }
 
-    override suspend fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
+    override fun establishChatConnection(input: Flow<ChatInput>): Flow<ChatOutput> {
         return flow {
             httpClient.getSocket(Constants.Path.WS_SERVER_CHAT) {
                 CoroutineScope(it.coroutineContext).launch { it.outgoingMessages(input) }
