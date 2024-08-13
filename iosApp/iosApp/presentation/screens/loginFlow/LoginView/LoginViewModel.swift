@@ -13,9 +13,6 @@ extension LoginView: Screen {
 }
 
 final class LoginViewModel: ScreenViewModel<LoginView> {
-
-    @Published var username: String = ""
-    @Published var password: String = ""
     
     private var loginTask: Task<Void, Error>?
     
@@ -25,7 +22,8 @@ final class LoginViewModel: ScreenViewModel<LoginView> {
             isLoading.insert(.login)
             defer { isLoading.remove(.login) }
             do {
-                try await asyncFunction(for: authUseCase.login(username: username, password: password))
+                _ = try await asyncFunction(for: authUseCase.login(username: username, password: password))
+                NotificationCenter.default.post(Notification(name: AppNotification.authorized))
             } catch {
                 self.alert = error.alertInfo
             }

@@ -6,6 +6,7 @@ import data.remote.RemoteClientType
 import data.remote.models.*
 import data.remote.models.chat.ConnectionsDTO
 import data.remote.models.chat.UserDTO
+import domain.models.AppError
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.Clock
@@ -23,7 +24,11 @@ class FakeRemoteClient: RemoteClientType {
 
     override suspend fun login(login: LoginDTO): AuthDTO {
         delay(requestDelayDuration)
-        return AuthDTO(authToken = "authToken", refreshToken = "refreshToken", expirationDate = null)
+        if (login.userName.lowercase() == "user777") {
+            return AuthDTO(authToken = "authToken", refreshToken = "refreshToken", expirationDate = null)
+        } else {
+            throw AppError.ServerError("Username must be 'user777'")
+        }
     }
 
     override suspend fun logout(auth: AuthDTO) {

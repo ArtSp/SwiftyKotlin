@@ -10,11 +10,13 @@ struct ContentView: LocalizedView {
         Group {
             if let presented = viewModel.presented {
                 makeContentView(screen: presented)
+                    .transition(.move(edge: .bottom))
                     .environment(\.updateRequired, viewModel.updateRequired)
             } else {
                 makeSplashView()
             }
         }
+        .animation(.easeInOut, value: viewModel.presented)
         .onReceive(viewModel.navigation) { router?(show: $0) }
         .onAppear { viewModel.checkForUpdates() }
         .destination(for: Destination.self) { destination, style in

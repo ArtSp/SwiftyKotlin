@@ -1,0 +1,8 @@
+
+"LoginView_loginRow" = "Login";
+"LoginView_passwordRow" = "Password";
+"LoginView_user" = "username";
+"LoginView_password" = "passord";
+"LoginView_login" = "Login";
+"LoginView_error_min5" = "Must be more than 5 symbols";
+"LoginView_error_symbolsAndDigits" = "Must contain symbols and digits";
